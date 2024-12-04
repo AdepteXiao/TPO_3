@@ -1,35 +1,26 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+class A:
+    def __init__(self, x):
+        self.x = x
 
+    def __str__(self):
+        return self.x
 
-options = Options()
-options.add_experimental_option("detach", True)
+class B:
+    def __init__(self, y: A):
+        self.y = y
 
-# Инициализация драйвера
-driver = webdriver.Chrome()
+    def upd(self):
+        self.y.x = "updated"
 
-driver.get("https://baranbellini.ru")  # Замените на URL вашей страницы
+    def __str__(self):
+        return str(self.y)
 
+class Main:
+    def __init__(self):
+        self.a = A("a")
+        self.b = B(self.a)
+        self.b.upd()
+        print(self.a)
+        print(self.b)
 
-def get_header_links(driver) -> dict[str, WebElement]:
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "a.top-nav__item")))
-
-    # Поиск элемента по CSS-селектору
-    return {
-        link.accessible_name: link
-        for link in filter(lambda x: x.accessible_name, driver.find_elements(By.CSS_SELECTOR, 'a.top-nav__item'))
-    }
-
-
-links = get_header_links(driver)
-
-for key, value in links.items():
-    print(f"Открываем {key}")
-    value.click()
-
-driver.quit()
+Main()

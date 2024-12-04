@@ -1,3 +1,4 @@
+from Tools.scripts.generate_opcode_h import header
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -9,13 +10,13 @@ from .utils import scroll_to_element
 
 
 class MainPage:
-    def __init__(self, driver: WebDriver):
+    def __init__(self, driver: WebDriver, cart:Cart):
         self.driver = driver
+        self.cart = cart
         self.set_main_page()
         self.accept_cookie()
         self.header_links: dict[str, WebElement] = {}
         self.products: dict[str, WebElement] = {}
-
         self.update_header_links()
 
     def get_header_links(self) -> dict[str, WebElement]:
@@ -61,7 +62,6 @@ class MainPage:
         scroll_to_element(self.driver, button)
         if button:
             button.click()
-
         else:
             print(f"Не найден продукт с именем {product_name} среди {self.products.keys()}")
 
@@ -69,8 +69,21 @@ class MainPage:
         product = choice(list(self.products.keys()))
         self.click_to_order_button(product)
 
-    def set_random_order(self, products_count=-1):
-        if products_count == -1:
+    def order_all_products(self):
+        for product in self.products.keys():
+            self.click_to_order_button(product)
+
+    def set_all_products(self):
+        products = dict[str, WebElement]
+        for link_name in self.header_links.keys():
+            self.click_to_header(link_name, is_load_products=True)
+            self.order_all_products()
+            products.update(self.products)
+        return products
+
+
+    def set_random_order(self, headers_count=-1, products_count=-1):
+        if products_count == -1 and headers_count == -1:
             for link_name in self.header_links.keys():
                 self.click_to_header(link_name, is_load_products=True)
                 self.order_random_product()
@@ -142,5 +155,5 @@ class MainPage:
         self.driver.get("https://baranbellini.ru/")
         self.header_links = self.get_header_links()
 
-    def go_to_cart(self):
-        cart = Cart(self.driver)
+    # def go_to_cart(self):
+    #     cart = Cart(self.driver)
