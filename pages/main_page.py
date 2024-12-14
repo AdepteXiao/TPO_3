@@ -10,18 +10,20 @@ from .utils import scroll_to_element
 
 
 class MainPage:
-    def __init__(self, driver: WebDriver, cart:Cart):
+    def __init__(self, driver: WebDriver, cart: Cart):
         self.driver = driver
         self.cart = cart
         self.set_main_page()
         self.accept_cookie()
         self.header_links: dict[str, WebElement] = {}
+        self.filtered_links: dict[str, WebElement] = {}
         self.products: dict[str, WebElement] = {}
         self.update_header_links()
 
     def get_header_links(self) -> dict[str, WebElement]:
         WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "a.top-nav__item")))
-        links_list = list(filter(lambda x: x.accessible_name, self.driver.find_elements(By.CSS_SELECTOR, 'a.top-nav__item')))
+        links_list = list(
+            filter(lambda x: x.accessible_name, self.driver.find_elements(By.CSS_SELECTOR, 'a.top-nav__item')))
         print(f"Получены ссылки из хедера: {', '.join(map(lambda x: x.accessible_name, links_list))}")
 
         return {
@@ -68,29 +70,21 @@ class MainPage:
     def order_random_product(self):
         product = choice(list(self.products.keys()))
         self.click_to_order_button(product)
+        return product
 
-    def order_all_products(self):
-        for product in self.products.keys():
-            self.click_to_order_button(product)
-
-    def set_all_products(self):
-        products = dict[str, WebElement]
-        for link_name in self.header_links.keys():
-            self.click_to_header(link_name, is_load_products=True)
-            self.order_all_products()
-            products.update(self.products)
-        return products
-
-
-    def set_random_order(self, headers_count=-1, products_count=-1):
-        if products_count == -1 and headers_count == -1:
-            for link_name in self.header_links.keys():
+    def set_random_order(self, products_count=-1):
+        chosen_prods = []
+        if products_count == -1:
+            for link_name in self.filtered_links.keys():
                 self.click_to_header(link_name, is_load_products=True)
-                self.order_random_product()
+                chosen_prods.append(self.order_random_product())
+            return chosen_prods
         else:
-            pass
-
-
+            for i in range(products_count):
+                link = choice(list(self.filtered_links.keys()))
+                self.click_to_header(link, is_load_products=True)
+                chosen_prods.append(self.order_random_product())
+            return chosen_prods
 
     def accept_cookie(self):
         try:
@@ -101,52 +95,10 @@ class MainPage:
         except Exception as e:
             pass
 
-    def navigate_header(self, num):
-        try:
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH,
-                                                                                 '//*[@id="app"]/div[1]/div[1]/div[3]/div[3]/div[2]/nav/a')))
-            elements = self.driver.find_elements(
-                By.XPATH,
-                '//*[@id="app"]/div[1]/div[1]/div[3]/div[3]/div[2]/nav/a'
-            )
-            # print(elements)
-            elements[num].click()
-        except Exception as e:
-            print(f"No such element in header as {num} ", e)
-
-    def navigate_footer(self, keyword):
-        try:
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH,
-                                                                                 '//*[@id="app"]/div[2]/div[2]/div/nav/a')))
-            element = self.driver.find_element(by=By.XPATH,
-                                               value=f"//nav[@class='main-footer__bottom-nav']/a]")
-            element.click()
-        except Exception as e:
-            print(f"No such element in footer as {keyword} ", e)
-
-    def add_to_cart(self, number):
-        # self.accept_cookie()
-        elements = self.driver.find_elements(by=By.XPATH,
-                                             value='//div[contains(@class, "bttn product-tile__add-btn bttn_primary")]')
-        print(elements)
-        try:
-            elements[number].click()
-            WebDriverWait(self.driver, 10).until(
-                self.driver.find_element(by=By.XPATH,
-                                         value='//*[@id="app"]/div[1]/div[1]/div[3]/div[3]/div[2]/div[1]/div/div/a').click())
-
-        except Exception as e:
-            print(f"No element with this number {number}", e)
-
-    def learn_more(self, number):
-        elements = self.driver.find_elements(by=By.CLASS_NAME, value="product-tile")
-        try:
-            elements[number].click()
-        except Exception as e:
-            print(f"No element with this number {number}", e)
-
     def update_header_links(self):
         self.header_links = self.get_header_links()
+        print(self.header_links)
+        self.filtered_links = {k: v for k, v in self.header_links.items() if k != "Бизнес-ланчи"}
 
     def update_products(self):
         self.products = self.get_current_product_list()
@@ -155,5 +107,5 @@ class MainPage:
         self.driver.get("https://baranbellini.ru/")
         self.header_links = self.get_header_links()
 
-    # def go_to_cart(self):
-    #     cart = Cart(self.driver)
+    def go_to_cart(self):
+        self.driver.find_element(by=By.CLASS_NAME, value="cart-informer__button").click()
