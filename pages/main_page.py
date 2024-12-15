@@ -15,16 +15,28 @@ class MainPage:
         self.cart = cart
         self.set_main_page()
         self.accept_cookie()
+        self.footer_links: dict[str, WebElement] = {}
         self.header_links: dict[str, WebElement] = {}
         self.filtered_links: dict[str, WebElement] = {}
         self.products: dict[str, WebElement] = {}
-        self.update_header_links()
+        self.update_links()
 
     def get_header_links(self) -> dict[str, WebElement]:
         WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "a.top-nav__item")))
         links_list = list(
             filter(lambda x: x.accessible_name, self.driver.find_elements(By.CSS_SELECTOR, 'a.top-nav__item')))
         print(f"Получены ссылки из хедера: {', '.join(map(lambda x: x.accessible_name, links_list))}")
+
+        return {
+            link.accessible_name: link
+            for link in links_list
+        }
+
+    def get_footer_links(self) -> dict[str, WebElement]:
+        WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "a.bottom-nav__item")))
+        links_list = list(
+            filter(lambda x: x.accessible_name, self.driver.find_elements(By.CSS_SELECTOR, 'a.bottom-nav__item')))
+        print(f"Получены ссылки из футера: {', '.join(map(lambda x: x.accessible_name, links_list))}")
 
         return {
             link.accessible_name: link
@@ -55,6 +67,18 @@ class MainPage:
             )
             if is_load_products:
                 self.update_products()
+        else:
+            print(f"Не найдена ссылка с именем {link_name} среди {self.header_links.keys()}")
+
+    def click_to_footer(self, link_name: str):
+        print(f"Кликаем на ссылку в футере: {link_name}")
+        link = self.footer_links.get(link_name, False)
+        if link:
+            scroll_to_element(self.driver, link)
+            link.click()
+            # WebDriverWait(self.driver, 10).until(
+            #     EC.text_to_be_present_in_element((By.CSS_SELECTOR, "h1.content-title"), link_name)
+            # )
         else:
             print(f"Не найдена ссылка с именем {link_name} среди {self.header_links.keys()}")
 
@@ -95,10 +119,11 @@ class MainPage:
         except Exception as e:
             pass
 
-    def update_header_links(self):
+    def update_links(self):
         self.header_links = self.get_header_links()
-        print(self.header_links)
         self.filtered_links = {k: v for k, v in self.header_links.items() if k != "Бизнес-ланчи"}
+        self.footer_links = self.get_footer_links()
+
 
     def update_products(self):
         self.products = self.get_current_product_list()

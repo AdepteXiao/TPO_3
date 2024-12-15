@@ -66,7 +66,7 @@ class TestCookies:
         assert (cookies == [] or any(
             cookie["value"] == "false" for cookie in cookies)), "Куки приняты, а не должны были быть"
 
-class TestNavigation:
+class TestHeaderNavigation:
     @pytest.mark.usefixtures("setup_1")
     def test_1_1_navigation_in_header(self, setup_1):
         driver, main_page = setup_1[:-1]
@@ -240,3 +240,47 @@ class TestFinishingOrder:
         cart.delete_from_cart()
         cart.finish_order()
         assert driver.current_url != "https://baranbellini.ru/order", "Страница не совпадает с заявленной"
+
+class TestFooterNavigation:
+    @pytest.mark.usefixtures("setup_1")
+    def test_4_1_navigation_in_footer(self, setup_1):
+        driver, main_page = setup_1[:-1]
+        main_page.click_to_footer("Акции")
+        assert driver.current_url == "https://baranbellini.ru/promo", "Страница не совпадает с заявленной"
+
+    @pytest.mark.usefixtures("setup_1")
+    def test_4_2_navigation_in_footer(self, setup_1):
+        driver, main_page = setup_1[:-1]
+        main_page.click_to_footer("Доставка и оплата")
+        assert driver.current_url == "https://baranbellini.ru/delivery-and-payment", "Страница не совпадает с заявленной"
+
+    @pytest.mark.usefixtures("setup_1")
+    def test_4_3_navigation_in_footer(self, setup_1):
+        driver, main_page = setup_1[:-1]
+        main_page.click_to_footer("Контакты")
+        assert driver.current_url == "https://baranbellini.ru/contacts", "Страница не совпадает с заявленной"
+
+    @pytest.mark.usefixtures("setup_1")
+    def test_4_4_navigation_in_footer(self, setup_1):
+        driver, main_page = setup_1[:-1]
+        main_page.click_to_footer("Зоны доставки")
+        assert driver.current_url == "https://baranbellini.ru/delivery-zones", "Страница не совпадает с заявленной"
+
+    @pytest.mark.usefixtures("setup_1")
+    def test_4_5_navigation_in_footer(self, setup_1):
+        driver, main_page = setup_1[:-1]
+        main_page.click_to_footer("Правовая информация")
+        assert driver.current_url == "https://baranbellini.ru/legal-information", "Страница не совпадает с заявленной"
+
+    @pytest.mark.usefixtures("setup_1")
+    def test_4_6_navigation_in_footer(self, setup_1):
+        driver, main_page = setup_1[:-1]
+        main_page.click_to_footer("Бонусная программа")
+        assert driver.current_url == "https://baranbellini.ru/loyalty-program", "Страница не совпадает с заявленной"
+
+    @pytest.mark.usefixtures("setup_1")
+    def test_4_7_navigation_in_footer(self, setup_1):
+        driver, main_page = setup_1[:-1]
+        main_page.click_to_footer("Работа в Bellini")
+        driver.switch_to.window(driver.window_handles[1])
+        assert driver.current_url == "https://hr.bellinigroup.ru/", "Страница не совпадает с заявленной"
