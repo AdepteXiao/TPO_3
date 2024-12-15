@@ -56,8 +56,26 @@ class Cart:
 
 
     def change_product_amount(self, num=0, way='inc'):
-        elements = self.driver.find_elements(by=By.CLASS_NAME, value='counter-changer__btn_inc') if way == 'inc' else self.driver.find_elements(by=By.CLASS_NAME, value='counter-changer__btn_dec')
-        elements[num].click()
+        try:
+            elements = self.driver.find_elements(by=By.CLASS_NAME, value='counter-changer__btn_inc') if way == 'inc' else self.driver.find_elements(by=By.CLASS_NAME, value='counter-changer__btn_dec')
+            elements[num].click()
+        except Exception as e:
+            print("Не удалось изменить количество товара", e)
 
-    def delete_from_cart(self):
-        pass
+    def delete_from_cart(self, num=0):
+        try:
+            elements = self.driver.find_elements(by=By.CLASS_NAME, value='cart-item__remostore')
+            element = elements[num].find_element(by=By.CLASS_NAME, value='cris-cross')
+            scroll_to_element(self.driver, element)
+            element.click()
+        except Exception as e:
+            print("Не удалось удалить товар из корзины", e)
+
+    def change_tableware_need(self):
+        try:
+            parent = self.driver.find_element(by=By.CLASS_NAME, value='cart-page-complementary-products__cutlery-needed')
+            element = parent.find_element(by=By.CLASS_NAME, value='checkbox-custom__checkmark')
+            scroll_to_element(self.driver, element)
+            element.click()
+        except Exception as e:
+            print("Не удалось изменить флаг", e)
